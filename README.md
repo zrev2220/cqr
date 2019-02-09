@@ -38,7 +38,9 @@ This will produce a *quiz.csv* file to be read by **cqr.py**.
 Run as follows:
 
 ```
-python cqr.py
+python cqr.py [color]
 ```
+
+> Run with the `color` argument for colored output!
 
 The script will open *quiz.csv* and begin quizzing the user. For each question, enter a number for your answer. End the quiz by answering all the questions, or interrupting the script with Ctrl+C. Your results and score will be displayed.
