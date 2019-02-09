@@ -4,6 +4,7 @@ import csv
 import enum
 import os
 import random
+import sys
 
 class Color(enum.Enum):
     RESET = enum.auto()
@@ -17,9 +18,10 @@ COLORS = dict(zip([*Color], ["\033[1;00;40m",
                              "\033[1;32;40m",
                              "\033[1;36;40m",
                              "\033[1;33;40m"]))
+useColor = False
 
 def colorText(s, color):
-    if platform == "linux": print(COLORS[color] + s + COLORS[Color.RESET])
+    if useColor: print(COLORS[color] + s + COLORS[Color.RESET])
     else: print(s)
 
 def results(total, correct):
@@ -29,6 +31,8 @@ def results(total, correct):
     colorText("{}/{}  {:.2f}%".format(correct, total, percent), Color.CYAN)
 
 if __name__ == "__main__":
+    useColor = platform == "linux" or "color" in sys.argv
+
     # load questions from .csv
     questions = []
     with open("quiz.csv", newline='') as csvfile:
