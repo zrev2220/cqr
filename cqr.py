@@ -70,4 +70,5 @@ if __name__ == "__main__":
             input("Press enter to continue . . . ")
             print()
     except KeyboardInterrupt:
-        results(total, correct)
+        pass
+    results(total, correct)
