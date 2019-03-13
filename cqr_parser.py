@@ -9,8 +9,10 @@ class DataState(Enum):
     NONE = 0
     TEXT = 1
     OPTION = 2
+    WARNING = 3
 
 class QuizParser(HTMLParser):
+    ignoreTags = {"strong":"*", "em":"_"}
     def __init__(self):
         super().__init__()
         self.questions = []
@@ -25,13 +27,21 @@ class QuizParser(HTMLParser):
     
     def handle_starttag(self, tag, attrs):
         attrs = defaultdict(str, attrs)
-        if tag == "textarea" and attrs["name"] == "question_text":
+        if tag in QuizParser.ignoreTags and self.currentQuestion is not None:
+            self.currentQuestion.text += " " + QuizParser.ignoreTags[tag]
+        elif tag == "textarea" and attrs["name"] == "question_text":
             # new question
             self.end()
-        elif tag == "div" and attrs["class"] == "question_text user_content":
+        elif (tag == "div" and attrs["class"] == "question_text user_content") or \
+             (tag == "p" and "class" not in attrs):
             # question text incoming
+            # if <p>, question text MAY be incoming (if not, will be squashed by the next <p> or question_text <div>)
             self.dataState = DataState.TEXT
-        elif tag =="div" and attrs["class"].startswith("answer answer_for_") and attrs["class"].endswith("correct_answer"):
+            if tag == "p" and self.currentQuestion is not None:
+                # the fact that we're bothering with a <p> indicates there were other tags in this question_text <div>
+                # so we need to reset the question text to remove any data we erroneously read already
+                self.currentQuestion.text = ""
+        elif tag == "div" and attrs["class"].startswith("answer answer_for_") and attrs["class"].endswith("correct_answer"):
             # incoming option is a correct one
             self.correctOption = True
         elif tag == "div" and attrs["class"] == "answer_text":
@@ -39,15 +49,24 @@ class QuizParser(HTMLParser):
             self.dataState = DataState.OPTION
 
     def handle_data(self, data):
+        if self.currentQuestion is None:
+            return
         data = data.strip()
         if self.dataState == DataState.TEXT:
-            self.currentQuestion.text = data
+            self.currentQuestion.text += data
         elif self.dataState == DataState.OPTION:
             self.currentQuestion.options.append(data)
             if self.correctOption:
                 self.currentQuestion.correct.add(len(self.currentQuestion.options) - 1)
                 self.correctOption = False
-        self.dataState = DataState.NONE
+
+    def handle_endtag(self, tag):
+        # state resets at a </div>
+        # this allows for 
+        if tag == "div":
+            self.dataState = DataState.NONE
+        elif tag in QuizParser.ignoreTags and self.currentQuestion is not None:
+            self.currentQuestion.text += QuizParser.ignoreTags[tag] + " "
 
 if __name__ == "__main__":
     # check command line arguments

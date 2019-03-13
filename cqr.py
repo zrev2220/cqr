@@ -1,5 +1,4 @@
 from question import Question
-from sys import platform
 import csv
 import enum
 import os
@@ -31,7 +30,8 @@ def results(total, correct):
     colorText("{}/{}  {:.2f}%".format(correct, total, percent), Color.CYAN)
 
 if __name__ == "__main__":
-    useColor = platform == "linux" or "color" in sys.argv
+    useColor = sys.platform == "linux" or "--color" in sys.argv
+    shuffle = "--shuffle" in sys.argv
 
     # load questions from .csv
     questions = []
@@ -41,6 +41,15 @@ if __name__ == "__main__":
             questions.append(Question.fromList(row))
 
     # quiz!
+    if shuffle:
+        # shuffle questions
+        random.shuffle(questions)
+        # reassign IDs to count in order
+        i = 0
+        for q in questions:
+            q.id = i
+            i += 1
+
     total, correct = 0, 0
     try:
         for q in questions:
