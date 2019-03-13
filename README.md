@@ -38,9 +38,15 @@ This will produce a *quiz.csv* file to be read by **cqr.py**.
 Run as follows:
 
 ```
-python cqr.py [color]
+python cqr.py [options]
 ```
 
-> Run with the `color` argument for colored output!
+where `[options]` include the following:
+
+```
+--color:    Run with colored output (won't work in Windows CMD)
+--shuffle:  Shuffle question order
+```
+
 
 The script will open *quiz.csv* and begin quizzing the user. For each question, enter a number for your answer. End the quiz by answering all the questions, or interrupting the script with Ctrl+C. Your results and score will be displayed.
